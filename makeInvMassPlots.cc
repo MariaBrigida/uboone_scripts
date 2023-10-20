@@ -3,8 +3,8 @@
 typedef std::map<int, TH1D*> IntTypeHistoMap;
 typedef std::map<int, std::string> IntTypeLabelMap;
 
-void makePlot(IntTypeHistoMap &histos, const std::string &canvasName,  const std::string &fileName, const std::vector<int> &interactionTypes,
-    IntTypeLabelMap &labels) {
+void makePlot(IntTypeHistoMap &histos, const std::string &canvasName, const std::string &xLabel, const std::string &yLabel,
+    const std::string &fileName, const std::vector<int> &interactionTypes, IntTypeLabelMap &labels) {
     TCanvas *c = new TCanvas(canvasName.c_str());
     c->SetCanvasSize(1024, 768);
     std::string opt{""};
@@ -20,6 +20,9 @@ void makePlot(IntTypeHistoMap &histos, const std::string &canvasName,  const std
     auto legend{new TLegend(0.7, 0.55, 0.99, 0.9)};
     for (int intType : interactionTypes)
     {
+        histos[intType]->SetTitle("");
+        histos[intType]->GetXaxis()->SetTitle(xLabel.c_str());
+        histos[intType]->GetYaxis()->SetTitle(yLabel.c_str());
         histos[intType]->GetYaxis()->SetRangeUser(0, maxVal + std::ceil(std::sqrt(maxVal)));
         histos[intType]->SetStats(0);
         histos[intType]->SetLineWidth(2);
@@ -265,10 +268,12 @@ void makeInvMassPlots() {
 
     }
 
-    makePlot(hTrueDeltaInvMass, "trueDeltaInvMassCanvas",  "trueDeltaInvMass.png", interactionTypes, intTypeLabels);
-    makePlot(hRecoDeltaInvMass, "recoDeltaInvMassCanvas",  "recoDeltaInvMass.png", interactionTypes, intTypeLabels);
-    makePlot(hDeltaInvMassRes, "deltaInvMassResCanvas",  "deltaInvMassRes.png", interactionTypes, intTypeLabels);
-    makePlot(hLeadingPhotonEnergyRes, "leadingPhotonEnergyResCanvas",  "leadingPhotonEnergyRes.png", interactionTypes, intTypeLabels);
-    makePlot(hSubleadingPhotonEnergyRes, "subleadingPhotonEnergyRes",  "subleadingPhotonEnergyRes.png", interactionTypes, intTypeLabels);
-    makePlot(hProtonEnergyRes, "protonEnergyRes",  "protonEnergyRes.png", interactionTypes, intTypeLabels);
+    makePlot(hTrueDeltaInvMass, "trueDeltaInvMassCanvas", "Invariant Mass [GeV]", "N", "trueDeltaInvMass.png", interactionTypes, intTypeLabels);
+    makePlot(hRecoDeltaInvMass, "recoDeltaInvMassCanvas", "Invariant Mass [GeV]", "N", "recoDeltaInvMass.png", interactionTypes, intTypeLabels);
+    makePlot(hDeltaInvMassRes, "deltaInvMassResCanvas", "Invariant Mass [GeV]", "N", "deltaInvMassRes.png", interactionTypes, intTypeLabels);
+    makePlot(hLeadingPhotonEnergyRes, "leadingPhotonEnergyResCanvas", "Invariant Mass [GeV]", "N", "leadingPhotonEnergyRes.png", interactionTypes,
+        intTypeLabels);
+    makePlot(hSubleadingPhotonEnergyRes, "subleadingPhotonEnergyRes", "Invariant Mass [GeV]", "N", "subleadingPhotonEnergyRes.png", interactionTypes,
+        intTypeLabels);
+    makePlot(hProtonEnergyRes, "protonEnergyRes", "Invariant Mass [GeV]", "N", "protonEnergyRes.png", interactionTypes, intTypeLabels);
 }
