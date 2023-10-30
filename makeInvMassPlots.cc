@@ -66,7 +66,7 @@ void makeInvMassPlots() {
         {1096, "NCCOH"}
     };
 
-    const char* fileName = "sbnfit_2g0p_NextGen_v4_stage_3_NCPi0All.root";
+    const char* fileName = "sbnfit_2g1p_NextGen_v4_stage_3_NCPi0All.root";
     const char* treeName = "singlephoton/vertex_tree";
 
     // Open the ROOT file containing the TTree
@@ -130,7 +130,7 @@ void makeInvMassPlots() {
     tree->SetBranchAddress("reco_shower_implied_diry",&recoPhotonDirY);
     tree->SetBranchAddress("reco_shower_implied_dirz",&recoPhotonDirZ);
 
-    IntTypeHistoMap hTrueDeltaInvMass, hRecoDeltaInvMass, hDeltaInvMassRes, hTruePi0InvMass, hRecoPi0InvMass, hPi0InvMassRes, hLeadingPhotonEnergyRes, hSubleadingPhotonEnergyRes, hProtonEnergyRes, hRecoProtonPi0Angle, hTrueProtonPi0Angle, hProtonPi0AngleRes;
+    IntTypeHistoMap hTrueDeltaInvMass, hRecoDeltaInvMass, hDeltaInvMassRes, hTruePi0InvMass, hRecoPi0InvMass, hPi0InvMassRes, hLeadingPhotonEnergyRes, hSubleadingPhotonEnergyRes, hProtonEnergyRes, hRecoProtonPi0Angle, hTrueProtonPi0Angle, hProtonPi0AngleRes, hRecoLeadingPhotonEnergy, hTrueLeadingPhotonEnergy, hRecoSubleadingPhotonEnergy, hTrueSubleadingPhotonEnergy;
     for (int intType : interactionTypes) {
         hTrueDeltaInvMass[intType] = new TH1D("hTrueDeltaInvMass","hTrueDeltaInvMass",60,0.8,2);
         hRecoDeltaInvMass[intType] = new TH1D("hRecoDeltaInvMass","hRecoDeltaInvMass",60,0.8,2);
@@ -145,6 +145,12 @@ void makeInvMassPlots() {
 	hRecoProtonPi0Angle[intType] = new TH1D("hRecoProtonPi0Angle","hRecoProtonPi0Angle",60,0,360);
 	hTrueProtonPi0Angle[intType] = new TH1D("hTrueProtonPi0Angle","hTrueProtonPi0Angle",60,0,360);
 	hProtonPi0AngleRes[intType] = new TH1D("hProtonPi0AngleRes","hProtonPi0AngleRes",30,-1,1);
+
+	hRecoLeadingPhotonEnergy[intType] = new TH1D("hRecoLeadingPhotonEnergy","hRecoLeadingPhotonEnergy",60,0,1.2);
+	hTrueLeadingPhotonEnergy[intType] = new TH1D("hTrueLeadingPhotonEnergy","hTrueLeadingPhotonEnergy",60,0,1.2);
+	hRecoSubleadingPhotonEnergy[intType] = new TH1D("hRecoSubleadingPhotonEnergy","hRecoSubleadingPhotonEnergy",60,0,1.2);
+	hTrueSubleadingPhotonEnergy[intType] = new TH1D("hTrueSubleadingPhotonEnergy","hTrueSubleadingPhotonEnergy",60,0,1.2);
+
     }
 
     Long64_t nEntries = tree->GetEntries();
@@ -285,6 +291,10 @@ void makeInvMassPlots() {
 	hRecoProtonPi0Angle[trueInteractionType]->Fill(recoProtonPi0Angle);
 	hTrueProtonPi0Angle[trueInteractionType]->Fill(trueProtonPi0Angle);
 	hProtonPi0AngleRes[trueInteractionType]->Fill((recoProtonPi0Angle-trueProtonPi0Angle)/trueProtonPi0Angle);
+	hRecoLeadingPhotonEnergy[trueInteractionType]->Fill(recoLeadingPhotonE);
+	hTrueLeadingPhotonEnergy[trueInteractionType]->Fill(trueLeadingPhotonE);
+	hRecoSubleadingPhotonEnergy[trueInteractionType]->Fill(recoSubleadingPhotonE);
+	hTrueSubleadingPhotonEnergy[trueInteractionType]->Fill(trueSubleadingPhotonE);
 
 //        double recoPhoton0DirX=recoPhotonDirX->at(0);
 //        double recoPhoton0DirX=recoPhrecoPhotonDirY=0;
@@ -308,6 +318,15 @@ void makeInvMassPlots() {
         intTypeLabels);
     makePlot(hSubleadingPhotonEnergyRes, "subleadingPhotonEnergyResCanvas", "Energy Resolution", "N", "subleadingPhotonEnergyRes.pdf", interactionTypes,
         intTypeLabels);
+    makePlot(hRecoLeadingPhotonEnergy, "recoLeadingPhotonEnergy", "Energy [GeV]", "N", "recoLeadingPhotonEnergy.pdf", interactionTypes,
+        intTypeLabels);
+    makePlot(hTrueLeadingPhotonEnergy, "trueLeadingPhotonEnergy", "Energy [GeV]", "N", "trueLeadingPhotonEnergy.pdf", interactionTypes,
+        intTypeLabels);
+    makePlot(hRecoSubleadingPhotonEnergy, "recoSubleadingPhotonEnergy", "Energy [GeV]", "N", "recoSubleadingPhotonEnergy.pdf", interactionTypes,
+        intTypeLabels);
+    makePlot(hTrueSubleadingPhotonEnergy, "trueSubleadingPhotonEnergy", "Energy [GeV]", "N", "trueSubleadingPhotonEnergy.pdf", interactionTypes,
+        intTypeLabels);
+
     makePlot(hProtonEnergyRes, "protonEnergyResCanvas", "Invariant Mass Resolution", "N", "protonEnergyRes.pdf", interactionTypes, intTypeLabels);
     makePlot(hRecoProtonPi0Angle, "recoProtonPi0AngleCanvas", "Angle [deg]", "N", "recoProtonPi0Angle.pdf", interactionTypes, intTypeLabels);
     makePlot(hTrueProtonPi0Angle, "trueProtonPi0AngleCanvas", "Angle [deg]", "N", "trueProtonPi0Angle.pdf", interactionTypes, intTypeLabels);
