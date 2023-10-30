@@ -6,7 +6,7 @@ typedef std::map<int, std::string> IntTypeLabelMap;
 void makePlot(IntTypeHistoMap &histos, const std::string &canvasName, const std::string &xLabel, const std::string &yLabel,
     const std::string &fileName, const std::vector<int> &interactionTypes, IntTypeLabelMap &labels) {
     TCanvas *c = new TCanvas(canvasName.c_str());
-    c->SetCanvasSize(1024, 768);
+    //c->SetCanvasSize(1024, 768);
     std::string opt{""};
     int color{1};
     int style{1};
@@ -66,7 +66,7 @@ void makeInvMassPlots() {
         {1096, "NCCOH"}
     };
 
-    const char* fileName = "sbnfit_2g1p_NextGen_v4_stage_3_NCPi0All.root";
+    const char* fileName = "sbnfit_2g0p_NextGen_v4_stage_3_NCPi0All.root";
     const char* treeName = "singlephoton/vertex_tree";
 
     // Open the ROOT file containing the TTree
@@ -130,14 +130,21 @@ void makeInvMassPlots() {
     tree->SetBranchAddress("reco_shower_implied_diry",&recoPhotonDirY);
     tree->SetBranchAddress("reco_shower_implied_dirz",&recoPhotonDirZ);
 
-    IntTypeHistoMap hTrueDeltaInvMass, hRecoDeltaInvMass, hDeltaInvMassRes, hLeadingPhotonEnergyRes, hSubleadingPhotonEnergyRes, hProtonEnergyRes;
+    IntTypeHistoMap hTrueDeltaInvMass, hRecoDeltaInvMass, hDeltaInvMassRes, hTruePi0InvMass, hRecoPi0InvMass, hPi0InvMassRes, hLeadingPhotonEnergyRes, hSubleadingPhotonEnergyRes, hProtonEnergyRes, hRecoProtonPi0Angle, hTrueProtonPi0Angle, hProtonPi0AngleRes;
     for (int intType : interactionTypes) {
         hTrueDeltaInvMass[intType] = new TH1D("hTrueDeltaInvMass","hTrueDeltaInvMass",60,0.8,2);
         hRecoDeltaInvMass[intType] = new TH1D("hRecoDeltaInvMass","hRecoDeltaInvMass",60,0.8,2);
         hDeltaInvMassRes[intType] = new TH1D("hRecoDeltaInvMassRes","hRecoDeltaInvMassRes",60,-0.6,0.6);
+        hTruePi0InvMass[intType] = new TH1D("hTruePi0InvMass","hTruePi0InvMass",60,0,0.3);
+        hRecoPi0InvMass[intType] = new TH1D("hRecoPi0InvMass","hRecoPi0InvMass",60,0,0.3);
+        hPi0InvMassRes[intType] = new TH1D("hRecoPi0InvMassRes","hRecoPi0InvMassRes",60,-0.6,0.6);
+
         hLeadingPhotonEnergyRes[intType] = new TH1D("hLeadingPhotonEnergyRes","hLeadingPhotonEnergyRes",30,-0.6,0.6);
         hSubleadingPhotonEnergyRes[intType] = new TH1D("hSubleadingPhotonEnergyRes","hSubleadingPhotonEnergyRes",30,-0.6,0.6);
         hProtonEnergyRes[intType] = new TH1D("hProtonEnergyRes","hProtonEnergyRes",30,-0.6,0.6);
+	hRecoProtonPi0Angle[intType] = new TH1D("hRecoProtonPi0Angle","hRecoProtonPi0Angle",60,0,360);
+	hTrueProtonPi0Angle[intType] = new TH1D("hTrueProtonPi0Angle","hTrueProtonPi0Angle",60,0,360);
+	hProtonPi0AngleRes[intType] = new TH1D("hProtonPi0AngleRes","hProtonPi0AngleRes",30,-1,1);
     }
 
     Long64_t nEntries = tree->GetEntries();
@@ -182,6 +189,14 @@ void makeInvMassPlots() {
 	double Ptot2 = Pxtot*Pxtot + Pytot*Pytot + Pztot*Pztot;
 	double trueDeltaInvMass = TMath::Sqrt(Etot2-Ptot2);
 	hTrueDeltaInvMass[trueInteractionType]->Fill(trueDeltaInvMass);
+	double EtotPi0 = trueLeadingPhotonEnergy+trueSubleadingPhotonEnergy;
+	double EtotPi02 = EtotPi0*EtotPi0;
+	double PxtotPi0 = trueLeadingPhotonMomX + trueSubleadingPhotonMomX;
+	double PytotPi0 = trueLeadingPhotonMomY + trueSubleadingPhotonMomY;
+	double PztotPi0 = trueLeadingPhotonMomZ + trueSubleadingPhotonMomZ;
+	double PtotPi02 = PxtotPi0*PxtotPi0 + PytotPi0*PytotPi0 + PztotPi0*PztotPi0;
+	double truePi0InvMass = TMath::Sqrt(EtotPi02-PtotPi02); 
+	hTruePi0InvMass[trueInteractionType]->Fill(truePi0InvMass);
 
         //Reco quantities
 	//Which is the most energetic photon?
@@ -221,6 +236,14 @@ void makeInvMassPlots() {
 	double recoSubleadingPhotonMomY=recoSubleadingPhotonE*recoSubleadingPhotonDirY;
 	double recoSubleadingPhotonMomZ=recoSubleadingPhotonE*recoSubleadingPhotonDirZ;
 	double cosTheta=recoLeadingPhotonDirX*recoSubleadingPhotonDirX+recoLeadingPhotonDirY*recoSubleadingPhotonDirY+recoLeadingPhotonDirZ*recoSubleadingPhotonDirZ;
+	TVector3 recoProtonMomVect(recoProtonDirx,recoProtonDiry,recoProtonDirz);
+	TVector3 recoPi0MomVect(recoLeadingPhotonMomX+recoSubleadingPhotonMomX,recoLeadingPhotonMomY+recoSubleadingPhotonMomY,recoLeadingPhotonMomZ+recoSubleadingPhotonMomZ);
+	TVector3 trueProtonMomVect(trueProtonMomX,trueProtonMomY,trueProtonMomZ);
+	TVector3 truePi0MomVect(trueLeadingPhotonMomX+trueSubleadingPhotonMomX,trueLeadingPhotonMomY+trueSubleadingPhotonMomY,trueLeadingPhotonMomZ+trueSubleadingPhotonMomZ);
+
+	double recoProtonPi0Angle=recoProtonMomVect.Angle(recoPi0MomVect)/TMath::Pi()*360;
+	double trueProtonPi0Angle=trueProtonMomVect.Angle(truePi0MomVect)/TMath::Pi()*360;
+	double protonPi0AngleRes=(recoProtonPi0Angle-trueProtonPi0Angle)/recoProtonPi0Angle;
 
 	std::cout << "DEBUG recoProtonE = " << recoProtonE << std::endl;
 	std::cout << "DEBUG recoProtonMomX = " << recoProtonMomX << std::endl;
@@ -252,9 +275,16 @@ void makeInvMassPlots() {
 	std::cout << "recoDeltaInvMass = " << recoDeltaInvMass << std::endl;
 	hRecoDeltaInvMass[trueInteractionType]->Fill(recoDeltaInvMass);
 	hDeltaInvMassRes[trueInteractionType]->Fill((recoDeltaInvMass-trueDeltaInvMass)/trueDeltaInvMass);
+
+	double recoPi0InvMass = TMath::Sqrt(2*recoLeadingPhotonE*recoSubleadingPhotonE*(1-cosTheta));
+	hRecoPi0InvMass[trueInteractionType]->Fill(recoPi0InvMass);
+	hPi0InvMassRes[trueInteractionType]->Fill((recoPi0InvMass-truePi0InvMass)/truePi0InvMass);
 	hLeadingPhotonEnergyRes[trueInteractionType]->Fill((recoLeadingPhotonE-trueLeadingPhotonE)/trueLeadingPhotonE);
 	hSubleadingPhotonEnergyRes[trueInteractionType]->Fill((recoSubleadingPhotonE-trueSubleadingPhotonE)/trueSubleadingPhotonE);
 	hProtonEnergyRes[trueInteractionType]->Fill((recoProtonE-trueProtonE)/trueProtonE);
+	hRecoProtonPi0Angle[trueInteractionType]->Fill(recoProtonPi0Angle);
+	hTrueProtonPi0Angle[trueInteractionType]->Fill(trueProtonPi0Angle);
+	hProtonPi0AngleRes[trueInteractionType]->Fill((recoProtonPi0Angle-trueProtonPi0Angle)/trueProtonPi0Angle);
 
 //        double recoPhoton0DirX=recoPhotonDirX->at(0);
 //        double recoPhoton0DirX=recoPhrecoPhotonDirY=0;
@@ -268,12 +298,18 @@ void makeInvMassPlots() {
 
     }
 
-    makePlot(hTrueDeltaInvMass, "trueDeltaInvMassCanvas", "Invariant Mass [GeV]", "N", "trueDeltaInvMass.png", interactionTypes, intTypeLabels);
-    makePlot(hRecoDeltaInvMass, "recoDeltaInvMassCanvas", "Invariant Mass [GeV]", "N", "recoDeltaInvMass.png", interactionTypes, intTypeLabels);
-    makePlot(hDeltaInvMassRes, "deltaInvMassResCanvas", "Invariant Mass [GeV]", "N", "deltaInvMassRes.png", interactionTypes, intTypeLabels);
-    makePlot(hLeadingPhotonEnergyRes, "leadingPhotonEnergyResCanvas", "Invariant Mass [GeV]", "N", "leadingPhotonEnergyRes.png", interactionTypes,
+    makePlot(hTrueDeltaInvMass, "trueDeltaInvMassCanvas", "Invariant Mass [GeV]", "N", "trueDeltaInvMass.pdf", interactionTypes, intTypeLabels);
+    makePlot(hRecoDeltaInvMass, "recoDeltaInvMassCanvas", "Invariant Mass [GeV]", "N", "recoDeltaInvMass.pdf", interactionTypes, intTypeLabels);
+    makePlot(hDeltaInvMassRes, "deltaInvMassResCanvas", "Invariant Mass Resolution", "N", "deltaInvMassRes.pdf", interactionTypes, intTypeLabels);
+    makePlot(hTruePi0InvMass, "truePi0InvMassCanvas", "Invariant Mass [GeV]", "N", "truePi0InvMass.pdf", interactionTypes, intTypeLabels);
+    makePlot(hRecoPi0InvMass, "recoPi0InvMassCanvas", "Invariant Mass [GeV]", "N", "recoPi0InvMass.pdf", interactionTypes, intTypeLabels);
+    makePlot(hPi0InvMassRes, "pi0InvMassResCanvas", "Invariant Mass Resolution", "N", "pi0InvMassRes.pdf", interactionTypes, intTypeLabels);
+    makePlot(hLeadingPhotonEnergyRes, "leadingPhotonEnergyResCanvas", "Energy Resolution", "N", "leadingPhotonEnergyRes.pdf", interactionTypes,
         intTypeLabels);
-    makePlot(hSubleadingPhotonEnergyRes, "subleadingPhotonEnergyRes", "Invariant Mass [GeV]", "N", "subleadingPhotonEnergyRes.png", interactionTypes,
+    makePlot(hSubleadingPhotonEnergyRes, "subleadingPhotonEnergyResCanvas", "Energy Resolution", "N", "subleadingPhotonEnergyRes.pdf", interactionTypes,
         intTypeLabels);
-    makePlot(hProtonEnergyRes, "protonEnergyRes", "Invariant Mass [GeV]", "N", "protonEnergyRes.png", interactionTypes, intTypeLabels);
+    makePlot(hProtonEnergyRes, "protonEnergyResCanvas", "Invariant Mass Resolution", "N", "protonEnergyRes.pdf", interactionTypes, intTypeLabels);
+    makePlot(hRecoProtonPi0Angle, "recoProtonPi0AngleCanvas", "Angle [deg]", "N", "recoProtonPi0Angle.pdf", interactionTypes, intTypeLabels);
+    makePlot(hTrueProtonPi0Angle, "trueProtonPi0AngleCanvas", "Angle [deg]", "N", "trueProtonPi0Angle.pdf", interactionTypes, intTypeLabels);
+    makePlot(hProtonPi0AngleRes, "protonPi0AngleResCanvas", "Angle Resolution", "N", "protonPi0AngleRes.pdf", interactionTypes, intTypeLabels);
 }
