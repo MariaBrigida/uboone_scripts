@@ -1,3 +1,8 @@
+//Usage example, where 2g1p.list is a text file with a list of sample paths:
+//   root -l
+//   .L ../makeInvMassPlots.cc
+//   makeInvMassPlots("2g1p.list")
+
 #include <algorithm>
 
 typedef std::map<int, TH1D*> IntTypeHistoMap;
