@@ -1,7 +1,7 @@
-//Usage example, where 2g1p.list is a text file with a list of sample paths:
+//Usage example, where 2g1p.list is a text file with a list of sample paths, the second argument is the number of protons (0 or 1), and the third argument is for using implied direction from vertex (1) or fitted (0):
 //   root -l
 //   .L ../makeInvMassPlots.cc
-//   makeInvMassPlots("2g1p.list")
+//   makeInvMassPlots("2g1p.list","2g0p",1)
 
 #include <algorithm>
 
@@ -73,7 +73,7 @@ std::vector<char*> GetFileNames(const char* filenamelist) {
     return lines;
 }
 
-void makeInvMassPlots(const char* inputFilesList) {
+void makeInvMassPlots(const char* inputFilesList, const char* channel, const int implDir) {
 
     std::vector<int> interactionTypes{1006, 1007, 1008, 1009, 1013, 1014, 1015, 1016, 1002, 1092, 1096};
     IntTypeLabelMap intTypeLabels{
@@ -113,6 +113,10 @@ void makeInvMassPlots(const char* inputFilesList) {
     std::vector<double> *recoPhotonDirX=0;
     std::vector<double> *recoPhotonDirY=0;
     std::vector<double> *recoPhotonDirZ=0;
+    std::vector<double> *recoPhotonImpliedDirX=0;
+    std::vector<double> *recoPhotonImpliedDirY=0;
+    std::vector<double> *recoPhotonImpliedDirZ=0;
+
     std::vector<double> *recoPhotonEnergy=0;
     std::vector<double> *recoProtonDirX=0;
     std::vector<double> *recoProtonDirY=0;
@@ -136,9 +140,13 @@ void makeInvMassPlots(const char* inputFilesList) {
     chain.SetBranchAddress("reco_track_dirz",&recoProtonDirZ);
     chain.SetBranchAddress("reco_track_proton_kinetic_energy",&recoProtonKineticEnergy);
     chain.SetBranchAddress("reco_shower_energy_max",&recoPhotonEnergy);
-    chain.SetBranchAddress("reco_shower_implied_dirx",&recoPhotonDirX);
-    chain.SetBranchAddress("reco_shower_implied_diry",&recoPhotonDirY);
-    chain.SetBranchAddress("reco_shower_implied_dirz",&recoPhotonDirZ);
+    chain.SetBranchAddress("reco_shower_implied_dirx",&recoPhotonImpliedDirX);
+    chain.SetBranchAddress("reco_shower_implied_diry",&recoPhotonImpliedDirY);
+    chain.SetBranchAddress("reco_shower_implied_dirz",&recoPhotonImpliedDirZ);
+    chain.SetBranchAddress("reco_shower_dirx",&recoPhotonDirX);
+    chain.SetBranchAddress("reco_shower_diry",&recoPhotonDirY);
+    chain.SetBranchAddress("reco_shower_dirz",&recoPhotonDirZ);
+
 
     IntTypeHistoMap hTrueDeltaInvMass, hRecoDeltaInvMass, hDeltaInvMassRes, hTruePi0InvMass, hRecoPi0InvMass, hPi0InvMassRes, hLeadingPhotonEnergyRes, hSubleadingPhotonEnergyRes, hProtonEnergyRes, hRecoProtonPi0Angle, hTrueProtonPi0Angle, hProtonPi0AngleRes, hRecoLeadingPhotonEnergy, hTrueLeadingPhotonEnergy, hRecoSubleadingPhotonEnergy, hTrueSubleadingPhotonEnergy, hRecoOtherPhotonsEnergy;
     for (int intType : interactionTypes) {
@@ -217,14 +225,25 @@ void makeInvMassPlots(const char* inputFilesList) {
 	    int iRecoSubleadingShower=-999;
 	    if(recoPhotonEnergy->at(showerIndices->at(0))>recoPhotonEnergy->at(showerIndices->at(1))) {iRecoLeadingShower = showerIndices->at(0);iRecoSubleadingShower=showerIndices->at(1);}
 	    else {iRecoLeadingShower = showerIndices->at(1);iRecoSubleadingShower=showerIndices->at(0);}
-	    double recoLeadingPhotonE = recoPhotonEnergy->at(iRecoLeadingShower);	
-	    double recoLeadingPhotonDirX = recoPhotonDirX->at(iRecoLeadingShower);	
-	    double recoLeadingPhotonDirY = recoPhotonDirY->at(iRecoLeadingShower);	
-	    double recoLeadingPhotonDirZ = recoPhotonDirZ->at(iRecoLeadingShower);	
-	    double recoSubleadingPhotonE = recoPhotonEnergy->at(iRecoSubleadingShower);	
-	    double recoSubleadingPhotonDirX = recoPhotonDirX->at(iRecoSubleadingShower);	
-	    double recoSubleadingPhotonDirY = recoPhotonDirY->at(iRecoSubleadingShower);	
-	    double recoSubleadingPhotonDirZ = recoPhotonDirZ->at(iRecoSubleadingShower);
+	    double recoLeadingPhotonE = recoPhotonEnergy->at(iRecoLeadingShower);
+	    double recoSubleadingPhotonE = recoPhotonEnergy->at(iRecoSubleadingShower);
+		double recoLeadingPhotonDirX, recoLeadingPhotonDirY, recoLeadingPhotonDirZ, recoSubleadingPhotonDirX, recoSubleadingPhotonDirY, recoSubleadingPhotonDirZ;	
+		if(implDir){
+	        recoLeadingPhotonDirX = recoPhotonImpliedDirX->at(iRecoLeadingShower);	
+	        recoLeadingPhotonDirY = recoPhotonImpliedDirY->at(iRecoLeadingShower);	
+	        recoLeadingPhotonDirZ = recoPhotonImpliedDirZ->at(iRecoLeadingShower);	
+	        recoSubleadingPhotonDirX = recoPhotonImpliedDirX->at(iRecoSubleadingShower);	
+	        recoSubleadingPhotonDirY = recoPhotonImpliedDirY->at(iRecoSubleadingShower);	
+	        recoSubleadingPhotonDirZ = recoPhotonImpliedDirZ->at(iRecoSubleadingShower);
+        }
+		else{
+	        recoLeadingPhotonDirX = recoPhotonDirX->at(iRecoLeadingShower);	
+	        recoLeadingPhotonDirY = recoPhotonDirY->at(iRecoLeadingShower);	
+	        recoLeadingPhotonDirZ = recoPhotonDirZ->at(iRecoLeadingShower);	
+	        recoSubleadingPhotonDirX = recoPhotonDirX->at(iRecoSubleadingShower);	
+	        recoSubleadingPhotonDirY = recoPhotonDirY->at(iRecoSubleadingShower);	
+	        recoSubleadingPhotonDirZ = recoPhotonDirZ->at(iRecoSubleadingShower);
+		}	
 	    double recoProtonKineticE = recoProtonKineticEnergy->at(trackIndices->at(0));	
 	    double recoProtonDirx=recoProtonDirX->at(trackIndices->at(0));
 	    double recoProtonDiry=recoProtonDirY->at(trackIndices->at(0));
@@ -308,30 +327,34 @@ void makeInvMassPlots(const char* inputFilesList) {
         }
 
     }
+    TString implDirString="";
+    if(implDir) implDirString="ImpliedShowerDirection_";
+    else implDirString="FittedShowerDirection_";
+    TString channelString=TString(channel)+"_";
 
-    makePlot(hTrueDeltaInvMass, "trueDeltaInvMassCanvas", "Invariant Mass [GeV]", "N", "trueDeltaInvMass.pdf", interactionTypes, intTypeLabels);
-    makePlot(hRecoDeltaInvMass, "recoDeltaInvMassCanvas", "Invariant Mass [GeV]", "N", "recoDeltaInvMass.pdf", interactionTypes, intTypeLabels);
-    makePlot(hDeltaInvMassRes, "deltaInvMassResCanvas", "Invariant Mass Resolution", "N", "deltaInvMassRes.pdf", interactionTypes, intTypeLabels);
-    makePlot(hTruePi0InvMass, "truePi0InvMassCanvas", "Invariant Mass [GeV]", "N", "truePi0InvMass.pdf", interactionTypes, intTypeLabels);
-    makePlot(hRecoPi0InvMass, "recoPi0InvMassCanvas", "Invariant Mass [GeV]", "N", "recoPi0InvMass.pdf", interactionTypes, intTypeLabels);
-    makePlot(hPi0InvMassRes, "pi0InvMassResCanvas", "Invariant Mass Resolution", "N", "pi0InvMassRes.pdf", interactionTypes, intTypeLabels);
-    makePlot(hLeadingPhotonEnergyRes, "leadingPhotonEnergyResCanvas", "Energy Resolution", "N", "leadingPhotonEnergyRes.pdf", interactionTypes,
+    makePlot(hTrueDeltaInvMass, "trueDeltaInvMassCanvas", "Invariant Mass [GeV]", "N", (channelString+"trueDeltaInvMass.pdf").Data(), interactionTypes, intTypeLabels);
+    makePlot(hRecoDeltaInvMass, "recoDeltaInvMassCanvas", "Invariant Mass [GeV]", "N", (channelString+implDirString+"recoDeltaInvMass.pdf").Data(), interactionTypes, intTypeLabels);
+    makePlot(hDeltaInvMassRes, "deltaInvMassResCanvas", "Invariant Mass Resolution", "N", (channelString+implDirString+"deltaInvMassRes.pdf").Data(), interactionTypes, intTypeLabels);
+    makePlot(hTruePi0InvMass, "truePi0InvMassCanvas", "Invariant Mass [GeV]", "N", (channelString+"truePi0InvMass.pdf").Data(), interactionTypes, intTypeLabels);
+    makePlot(hRecoPi0InvMass, "recoPi0InvMassCanvas", "Invariant Mass [GeV]", "N", (channelString+implDirString+"recoPi0InvMass.pdf").Data(), interactionTypes, intTypeLabels);
+    makePlot(hPi0InvMassRes, "pi0InvMassResCanvas", "Invariant Mass Resolution", "N", (channelString+implDirString+"pi0InvMassRes.pdf").Data(), interactionTypes, intTypeLabels);
+    makePlot(hLeadingPhotonEnergyRes, "leadingPhotonEnergyResCanvas", "Energy Resolution", "N", (channelString+"leadingPhotonEnergyRes.pdf").Data(), interactionTypes,
         intTypeLabels);
-    makePlot(hSubleadingPhotonEnergyRes, "subleadingPhotonEnergyResCanvas", "Energy Resolution", "N", "subleadingPhotonEnergyRes.pdf", interactionTypes,
+    makePlot(hSubleadingPhotonEnergyRes, "subleadingPhotonEnergyResCanvas", "Energy Resolution", "N", (channelString+"subleadingPhotonEnergyRes.pdf").Data(), interactionTypes,
         intTypeLabels);
-    makePlot(hRecoLeadingPhotonEnergy, "recoLeadingPhotonEnergy", "Energy [GeV]", "N", "recoLeadingPhotonEnergy.pdf", interactionTypes,
+    makePlot(hRecoLeadingPhotonEnergy, "recoLeadingPhotonEnergy", "Energy [GeV]", "N", (channelString+"recoLeadingPhotonEnergy.pdf").Data(), interactionTypes,
         intTypeLabels);
-    makePlot(hTrueLeadingPhotonEnergy, "trueLeadingPhotonEnergy", "Energy [GeV]", "N", "trueLeadingPhotonEnergy.pdf", interactionTypes,
+    makePlot(hTrueLeadingPhotonEnergy, "trueLeadingPhotonEnergy", "Energy [GeV]", "N", (channelString+"trueLeadingPhotonEnergy.pdf").Data(), interactionTypes,
         intTypeLabels);
-    makePlot(hRecoSubleadingPhotonEnergy, "recoSubleadingPhotonEnergy", "Energy [GeV]", "N", "recoSubleadingPhotonEnergy.pdf", interactionTypes,
+    makePlot(hRecoSubleadingPhotonEnergy, "recoSubleadingPhotonEnergy", "Energy [GeV]", "N", (channelString+"recoSubleadingPhotonEnergy.pdf").Data(), interactionTypes,
         intTypeLabels);
-    makePlot(hTrueSubleadingPhotonEnergy, "trueSubleadingPhotonEnergy", "Energy [GeV]", "N", "trueSubleadingPhotonEnergy.pdf", interactionTypes,
+    makePlot(hTrueSubleadingPhotonEnergy, "trueSubleadingPhotonEnergy", "Energy [GeV]", "N", (channelString+"trueSubleadingPhotonEnergy.pdf").Data(), interactionTypes,
         intTypeLabels);
-    makePlot(hRecoOtherPhotonsEnergy, "recoOtherPhotonsEnergy", "Energy [GeV]", "N", "recoOtherPhotonsEnergy.pdf", interactionTypes,
+    makePlot(hRecoOtherPhotonsEnergy, "recoOtherPhotonsEnergy", "Energy [GeV]", "N", (channelString+"recoOtherPhotonsEnergy.pdf").Data(), interactionTypes,
         intTypeLabels);
 
-    makePlot(hProtonEnergyRes, "protonEnergyResCanvas", "Invariant Mass Resolution", "N", "protonEnergyRes.pdf", interactionTypes, intTypeLabels);
-    makePlot(hRecoProtonPi0Angle, "recoProtonPi0AngleCanvas", "Angle [deg]", "N", "recoProtonPi0Angle.pdf", interactionTypes, intTypeLabels);
-    makePlot(hTrueProtonPi0Angle, "trueProtonPi0AngleCanvas", "Angle [deg]", "N", "trueProtonPi0Angle.pdf", interactionTypes, intTypeLabels);
-    makePlot(hProtonPi0AngleRes, "protonPi0AngleResCanvas", "Angle Resolution", "N", "protonPi0AngleRes.pdf", interactionTypes, intTypeLabels);
+    makePlot(hProtonEnergyRes, "protonEnergyResCanvas", "Invariant Mass Resolution", "N", (channelString+"protonEnergyRes.pdf").Data(), interactionTypes, intTypeLabels);
+    makePlot(hRecoProtonPi0Angle, "recoProtonPi0AngleCanvas", "Angle [deg]", "N", (channelString+implDirString+"recoProtonPi0Angle.pdf").Data(), interactionTypes, intTypeLabels);
+    makePlot(hTrueProtonPi0Angle, "trueProtonPi0AngleCanvas", "Angle [deg]", "N", (channelString+"trueProtonPi0Angle.pdf").Data(), interactionTypes, intTypeLabels);
+    makePlot(hProtonPi0AngleRes, "protonPi0AngleResCanvas", "Angle Resolution", "N", (channelString+implDirString+"protonPi0AngleRes.pdf").Data(), interactionTypes, intTypeLabels);
 }
