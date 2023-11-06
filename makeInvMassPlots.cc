@@ -150,25 +150,25 @@ void makeInvMassPlots(const char* inputFilesList, const char* channel, const int
 
     IntTypeHistoMap hTrueDeltaInvMass, hRecoDeltaInvMass, hDeltaInvMassRes, hTruePi0InvMass, hRecoPi0InvMass, hPi0InvMassRes, hLeadingPhotonEnergyRes, hSubleadingPhotonEnergyRes, hProtonEnergyRes, hRecoProtonPi0Angle, hTrueProtonPi0Angle, hProtonPi0AngleRes, hRecoLeadingPhotonEnergy, hTrueLeadingPhotonEnergy, hRecoSubleadingPhotonEnergy, hTrueSubleadingPhotonEnergy, hRecoOtherPhotonsEnergy;
     for (int intType : interactionTypes) {
-        hTrueDeltaInvMass[intType] = new TH1D("hTrueDeltaInvMass","hTrueDeltaInvMass",60,0.8,2);
-        hRecoDeltaInvMass[intType] = new TH1D("hRecoDeltaInvMass","hRecoDeltaInvMass",60,0.8,2);
-        hDeltaInvMassRes[intType] = new TH1D("hRecoDeltaInvMassRes","hRecoDeltaInvMassRes",60,-0.6,0.6);
-        hTruePi0InvMass[intType] = new TH1D("hTruePi0InvMass","hTruePi0InvMass",60,0,0.3);
-        hRecoPi0InvMass[intType] = new TH1D("hRecoPi0InvMass","hRecoPi0InvMass",60,0,0.3);
-        hPi0InvMassRes[intType] = new TH1D("hRecoPi0InvMassRes","hRecoPi0InvMassRes",60,-0.6,0.6);
+        hTrueDeltaInvMass[intType] = new TH1D("hTrueDeltaInvMass","hTrueDeltaInvMass",20,0.8,1.8);
+        hRecoDeltaInvMass[intType] = new TH1D("hRecoDeltaInvMass","hRecoDeltaInvMass",20,0.8,1.8);
+        hDeltaInvMassRes[intType] = new TH1D("hRecoDeltaInvMassRes","hRecoDeltaInvMassRes",30,-0.6,0.6);
+        hTruePi0InvMass[intType] = new TH1D("hTruePi0InvMass","hTruePi0InvMass",20,0,0.3);
+        hRecoPi0InvMass[intType] = new TH1D("hRecoPi0InvMass","hRecoPi0InvMass",20,0,0.3);
+        hPi0InvMassRes[intType] = new TH1D("hRecoPi0InvMassRes","hRecoPi0InvMassRes",20,-0.6,0.6);
 
-        hLeadingPhotonEnergyRes[intType] = new TH1D("hLeadingPhotonEnergyRes","hLeadingPhotonEnergyRes",30,-0.6,0.6);
-        hSubleadingPhotonEnergyRes[intType] = new TH1D("hSubleadingPhotonEnergyRes","hSubleadingPhotonEnergyRes",30,-0.6,0.6);
-        hProtonEnergyRes[intType] = new TH1D("hProtonEnergyRes","hProtonEnergyRes",30,-0.6,0.6);
-	    hRecoProtonPi0Angle[intType] = new TH1D("hRecoProtonPi0Angle","hRecoProtonPi0Angle",60,0,360);
-	    hTrueProtonPi0Angle[intType] = new TH1D("hTrueProtonPi0Angle","hTrueProtonPi0Angle",60,0,360);
-	    hProtonPi0AngleRes[intType] = new TH1D("hProtonPi0AngleRes","hProtonPi0AngleRes",30,-1,1);
+        hLeadingPhotonEnergyRes[intType] = new TH1D("hLeadingPhotonEnergyRes","hLeadingPhotonEnergyRes",20,-0.6,0.6);
+        hSubleadingPhotonEnergyRes[intType] = new TH1D("hSubleadingPhotonEnergyRes","hSubleadingPhotonEnergyRes",20,-0.6,0.6);
+        hProtonEnergyRes[intType] = new TH1D("hProtonEnergyRes","hProtonEnergyRes",20,-0.4,0.4);
+	    hRecoProtonPi0Angle[intType] = new TH1D("hRecoProtonPi0Angle","hRecoProtonPi0Angle",20,0,360);
+	    hTrueProtonPi0Angle[intType] = new TH1D("hTrueProtonPi0Angle","hTrueProtonPi0Angle",20,0,360);
+	    hProtonPi0AngleRes[intType] = new TH1D("hProtonPi0AngleRes","hProtonPi0AngleRes",20,-1,1);
 
-	    hRecoLeadingPhotonEnergy[intType] = new TH1D("hRecoLeadingPhotonEnergy","hRecoLeadingPhotonEnergy",60,0,1.2);
-	    hTrueLeadingPhotonEnergy[intType] = new TH1D("hTrueLeadingPhotonEnergy","hTrueLeadingPhotonEnergy",60,0,1.2);
-	    hRecoSubleadingPhotonEnergy[intType] = new TH1D("hRecoSubleadingPhotonEnergy","hRecoSubleadingPhotonEnergy",60,0,1.2);
-	    hTrueSubleadingPhotonEnergy[intType] = new TH1D("hTrueSubleadingPhotonEnergy","hTrueSubleadingPhotonEnergy",60,0,1.2);
-	    hRecoOtherPhotonsEnergy[intType] = new TH1D("hRecoOtherPhotonsEnergy","hRecoOtherPhotonsEnergy",60,0,1.2);
+	    hRecoLeadingPhotonEnergy[intType] = new TH1D("hRecoLeadingPhotonEnergy","hRecoLeadingPhotonEnergy",20,0,0.5);
+	    hTrueLeadingPhotonEnergy[intType] = new TH1D("hTrueLeadingPhotonEnergy","hTrueLeadingPhotonEnergy",20,0,0.5);
+	    hRecoSubleadingPhotonEnergy[intType] = new TH1D("hRecoSubleadingPhotonEnergy","hRecoSubleadingPhotonEnergy",20,0,0.4);
+	    hTrueSubleadingPhotonEnergy[intType] = new TH1D("hTrueSubleadingPhotonEnergy","hTrueSubleadingPhotonEnergy",20,0,0.4);
+	    hRecoOtherPhotonsEnergy[intType] = new TH1D("hRecoOtherPhotonsEnergy","hRecoOtherPhotonsEnergy",20,0,0.5);
     }
     Long64_t nEntries = chain.GetEntries();
 
