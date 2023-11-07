@@ -180,12 +180,19 @@ void makeInvMassPlots(const char* inputFilesList, const char* channel, const int
         if (std::find(interactionTypes.begin(), interactionTypes.end(), trueInteractionType) == interactionTypes.end())
             continue;
 	    //Check that there is exactly 1 track, and at least 1 proton in event
-	    if(trackIndices->size()!=1 || trueProtonEnergy->size()<1) continue;
-	    int trackID=trackIndices->at(0);
-	    double trueProtonE=trueProtonEnergy->at(trackID);
-	    double trueProtonMomX=trueProtonPx->at(trackID);
-	    double trueProtonMomY=trueProtonPy->at(trackID);
-	    double trueProtonMomZ=trueProtonPz->at(trackID);
+	    if(std::string(channel) == "2g1p" && (trackIndices->size()!=1 || trueProtonEnergy->size()<1)) continue;
+	    double trueProtonE{0};
+	    double trueProtonMomX{0};
+	    double trueProtonMomY{0};
+	    double trueProtonMomZ{0};
+        if (!trackIndices->empty())
+        {
+    	    int trackID=trackIndices->at(0);
+	        trueProtonE=trueProtonEnergy->at(trackID);
+	        trueProtonMomX=trueProtonPx->at(trackID);
+    	    trueProtonMomY=trueProtonPy->at(trackID);
+	        trueProtonMomZ=trueProtonPz->at(trackID);
+        }
 
 	    //Check that there is exactly 2 showers, and the true photon energies are > 0
 	    if(showerIndices->size()<2) continue;
@@ -227,7 +234,7 @@ void makeInvMassPlots(const char* inputFilesList, const char* channel, const int
 	    else {iRecoLeadingShower = showerIndices->at(1);iRecoSubleadingShower=showerIndices->at(0);}
 	    double recoLeadingPhotonE = recoPhotonEnergy->at(iRecoLeadingShower);
 	    double recoSubleadingPhotonE = recoPhotonEnergy->at(iRecoSubleadingShower);
-		double recoLeadingPhotonDirX, recoLeadingPhotonDirY, recoLeadingPhotonDirZ, recoSubleadingPhotonDirX, recoSubleadingPhotonDirY, recoSubleadingPhotonDirZ;	
+		double recoLeadingPhotonDirX, recoLeadingPhotonDirY, recoLeadingPhotonDirZ, recoSubleadingPhotonDirX, recoSubleadingPhotonDirY, recoSubleadingPhotonDirZ;
 		if(implDir){
 	        recoLeadingPhotonDirX = recoPhotonImpliedDirX->at(iRecoLeadingShower);	
 	        recoLeadingPhotonDirY = recoPhotonImpliedDirY->at(iRecoLeadingShower);	
@@ -244,10 +251,17 @@ void makeInvMassPlots(const char* inputFilesList, const char* channel, const int
 	        recoSubleadingPhotonDirY = recoPhotonDirY->at(iRecoSubleadingShower);	
 	        recoSubleadingPhotonDirZ = recoPhotonDirZ->at(iRecoSubleadingShower);
 		}	
-	    double recoProtonKineticE = recoProtonKineticEnergy->at(trackIndices->at(0));	
-	    double recoProtonDirx=recoProtonDirX->at(trackIndices->at(0));
-	    double recoProtonDiry=recoProtonDirY->at(trackIndices->at(0));
-	    double recoProtonDirz=recoProtonDirZ->at(trackIndices->at(0));
+	    double recoProtonKineticE{0};	
+	    double recoProtonDirx{0};
+	    double recoProtonDiry{0};
+	    double recoProtonDirz{0};
+        if (!trackIndices->empty())
+        {
+	        recoProtonKineticE = recoProtonKineticEnergy->at(trackIndices->at(0));	
+    	    recoProtonDirx=recoProtonDirX->at(trackIndices->at(0));
+	        recoProtonDiry=recoProtonDirY->at(trackIndices->at(0));
+	        recoProtonDirz=recoProtonDirZ->at(trackIndices->at(0));
+        }
 
 	    //Calibrate photon energies
 	    recoLeadingPhotonE=1.21989*recoLeadingPhotonE + 8.50486;
@@ -311,7 +325,8 @@ void makeInvMassPlots(const char* inputFilesList, const char* channel, const int
 	    hPi0InvMassRes[trueInteractionType]->Fill((recoPi0InvMass-truePi0InvMass)/truePi0InvMass);
 	    hLeadingPhotonEnergyRes[trueInteractionType]->Fill((recoLeadingPhotonE-trueLeadingPhotonE)/trueLeadingPhotonE);
 	    hSubleadingPhotonEnergyRes[trueInteractionType]->Fill((recoSubleadingPhotonE-trueSubleadingPhotonE)/trueSubleadingPhotonE);
-	    hProtonEnergyRes[trueInteractionType]->Fill((recoProtonE-trueProtonE)/trueProtonE);
+        if (trueProtonE > 0)
+    	    hProtonEnergyRes[trueInteractionType]->Fill((recoProtonE-trueProtonE)/trueProtonE);
 	    hRecoProtonPi0Angle[trueInteractionType]->Fill(recoProtonPi0Angle);
 	    hTrueProtonPi0Angle[trueInteractionType]->Fill(trueProtonPi0Angle);
 	    hProtonPi0AngleRes[trueInteractionType]->Fill((recoProtonPi0Angle-trueProtonPi0Angle)/trueProtonPi0Angle);
@@ -325,7 +340,6 @@ void makeInvMassPlots(const char* inputFilesList, const char* channel, const int
         {
             hRecoOtherPhotonsEnergy[trueInteractionType]->Fill(recoPhotonEnergy->at(showerIndices->at(iSh))/1000);
         }
-
     }
     TString implDirString="";
     if(implDir) implDirString="ImpliedShowerDirection_";
