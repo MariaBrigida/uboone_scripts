@@ -1,11 +1,12 @@
 //Usage example, where 2g1p.list is a text file with a list of sample paths, the second argument is the number of protons (0 or 1), and the third argument is for using implied direction from vertex (1) or fitted (0):
 //   root -l
 //   .L ../makeInvMassPlots.cc
-//   makeInvMassPlots("2g1p.list","2g0p",1)
+//   makeInvMassPlots("2g0p_MC.list","2g0p",1)
 
 #include <algorithm>
 
 typedef std::map<int, TH1D*> IntTypeHistoMap;
+typedef std::map<int, TH2D*> IntTypeHistoMap2D;
 typedef std::map<int, std::string> IntTypeLabelMap;
 
 void makePlot(IntTypeHistoMap &histos, const std::string &canvasName, const std::string &xLabel, const std::string &yLabel,
@@ -55,6 +56,7 @@ void makePlot(IntTypeHistoMap &histos, const std::string &canvasName, const std:
     delete c;
 }
 
+
 std::vector<char*> GetFileNames(const char* filenamelist) {
     std::ifstream inFile(filenamelist);
     if (!inFile.is_open()) {
@@ -99,6 +101,14 @@ void makeInvMassPlots(const char* inputFilesList, const char* channel, const int
     //Set branch addresses
     int eventNumber{0};
     int trueInteractionType{0};
+    double recoNuVertexX{0};
+    double recoNuVertexY{0};
+    double recoNuVertexZ{0};
+    double trueNuVertexX{0};
+    double trueNuVertexY{0};
+    double trueNuVertexZ{0};
+
+
     //Truth
     double trueLeadingPhotonEnergy, trueSubleadingPhotonEnergy;
     std::vector<unsigned long> *trackIndices=0;
@@ -123,6 +133,8 @@ void makeInvMassPlots(const char* inputFilesList, const char* channel, const int
     std::vector<double> *recoProtonDirZ=0;
     std::vector<double> *recoProtonKineticEnergy=0;
 
+    
+
     chain.SetBranchAddress("event_number", &eventNumber);
     chain.SetBranchAddress("mctruth_interaction_type", &trueInteractionType);
     chain.SetBranchAddress("i_trk", &trackIndices);
@@ -146,9 +158,17 @@ void makeInvMassPlots(const char* inputFilesList, const char* channel, const int
     chain.SetBranchAddress("reco_shower_dirx",&recoPhotonDirX);
     chain.SetBranchAddress("reco_shower_diry",&recoPhotonDirY);
     chain.SetBranchAddress("reco_shower_dirz",&recoPhotonDirZ);
+    chain.SetBranchAddress("reco_vertex_x",&recoNuVertexX);
+    chain.SetBranchAddress("reco_vertex_y",&recoNuVertexY);
+    chain.SetBranchAddress("reco_vertex_z",&recoNuVertexZ);
+    chain.SetBranchAddress("mctruth_nu_vertex_x",&trueNuVertexX);
+    chain.SetBranchAddress("mctruth_nu_vertex_y",&trueNuVertexY);
+    chain.SetBranchAddress("mctruth_nu_vertex_z",&trueNuVertexZ);
 
 
-    IntTypeHistoMap hTrueDeltaInvMass, hRecoDeltaInvMass, hDeltaInvMassRes, hTruePi0InvMass, hRecoPi0InvMass, hPi0InvMassRes, hLeadingPhotonEnergyRes, hSubleadingPhotonEnergyRes, hProtonEnergyRes, hRecoProtonPi0Angle, hTrueProtonPi0Angle, hProtonPi0AngleRes, hRecoLeadingPhotonEnergy, hTrueLeadingPhotonEnergy, hRecoSubleadingPhotonEnergy, hTrueSubleadingPhotonEnergy, hRecoOtherPhotonsEnergy;
+
+    TH2D* hVertexResVsPi0Angle = new TH2D("hVertexResVsPi0Angle","hVertexResVsPi0Angle",40,0,200,40,0,400);
+    IntTypeHistoMap hTrueDeltaInvMass, hRecoDeltaInvMass, hDeltaInvMassRes, hTruePi0InvMass, hRecoPi0InvMass, hPi0InvMassRes, hLeadingPhotonEnergyRes, hSubleadingPhotonEnergyRes, hProtonEnergyRes, hRecoProtonPi0Angle, hTrueProtonPi0Angle, hProtonPi0AngleRes, hRecoLeadingPhotonEnergy, hTrueLeadingPhotonEnergy, hRecoSubleadingPhotonEnergy, hTrueSubleadingPhotonEnergy, hRecoOtherPhotonsEnergy, hVertexResolutionX,   hVertexResolutionY,   hVertexResolutionZ,   hVertexResolutionR;
     for (int intType : interactionTypes) {
         hTrueDeltaInvMass[intType] = new TH1D("hTrueDeltaInvMass","hTrueDeltaInvMass",20,0.8,1.8);
         hRecoDeltaInvMass[intType] = new TH1D("hRecoDeltaInvMass","hRecoDeltaInvMass",20,0.8,1.8);
@@ -162,13 +182,18 @@ void makeInvMassPlots(const char* inputFilesList, const char* channel, const int
         hProtonEnergyRes[intType] = new TH1D("hProtonEnergyRes","hProtonEnergyRes",20,-0.4,0.4);
         hRecoProtonPi0Angle[intType] = new TH1D("hRecoProtonPi0Angle","hRecoProtonPi0Angle",20,0,360);
         hTrueProtonPi0Angle[intType] = new TH1D("hTrueProtonPi0Angle","hTrueProtonPi0Angle",20,0,360);
-        hProtonPi0AngleRes[intType] = new TH1D("hProtonPi0AngleRes","hProtonPi0AngleRes",20,-1,1);
+        hProtonPi0AngleRes[intType] = new TH1D("hProtonPi0AngleRes","hProtonPi0AngleRes",21,-1.2,1.2);
 
         hRecoLeadingPhotonEnergy[intType] = new TH1D("hRecoLeadingPhotonEnergy","hRecoLeadingPhotonEnergy",20,0,0.5);
         hTrueLeadingPhotonEnergy[intType] = new TH1D("hTrueLeadingPhotonEnergy","hTrueLeadingPhotonEnergy",20,0,0.5);
         hRecoSubleadingPhotonEnergy[intType] = new TH1D("hRecoSubleadingPhotonEnergy","hRecoSubleadingPhotonEnergy",20,0,0.4);
         hTrueSubleadingPhotonEnergy[intType] = new TH1D("hTrueSubleadingPhotonEnergy","hTrueSubleadingPhotonEnergy",20,0,0.4);
         hRecoOtherPhotonsEnergy[intType] = new TH1D("hRecoOtherPhotonsEnergy","hRecoOtherPhotonsEnergy",20,0,0.5);
+
+        hVertexResolutionX[intType] = new TH1D("hVertexResolutionX","hVertexResolutionX",40,-100,100);
+        hVertexResolutionY[intType] = new TH1D("hVertexResolutionY","hVertexResolutionY",40,-100,100);
+        hVertexResolutionZ[intType] = new TH1D("hVertexResolutionZ","hVertexResolutionZ",40,-100,100);
+        hVertexResolutionR[intType] = new TH1D("hVertexResolutionR","hVertexResolutionR",40,0,100);
     }
     Long64_t nEntries = chain.GetEntries();
 
@@ -346,6 +371,22 @@ void makeInvMassPlots(const char* inputFilesList, const char* channel, const int
         {
             hRecoOtherPhotonsEnergy[trueInteractionType]->Fill(recoPhotonEnergy->at(showerIndices->at(iSh))/1000);
         }
+
+        //Fill vertex res plots
+        double vertexDeltaX = recoNuVertexX - trueNuVertexX;
+        double vertexDeltaY = recoNuVertexY - trueNuVertexY;
+        double vertexDeltaZ = recoNuVertexZ - trueNuVertexZ;
+        double vertexDeltaR = TMath::Sqrt(vertexDeltaX*vertexDeltaX+vertexDeltaY*vertexDeltaY+vertexDeltaZ*vertexDeltaZ);
+        double pi0TrueRecoAngle = recoPi0MomVect.Angle(truePi0MomVect)/TMath::Pi()*360;
+        //std::cout << "recoNuVertexX = " << recoNuVertexX << " recoNuVertexY = " << recoNuVertexY << " recoNuVertexZ = " << recoNuVertexZ << std::endl;
+        //std::cout << "trueNuVertexX = " << trueNuVertexX << " trueNuVertexY = " << trueNuVertexY << " trueNuVertexZ = " << trueNuVertexZ << std::endl;
+        //std::cout << "vertexDeltaX = " << vertexDeltaX << " vertexDeltaY = " << vertexDeltaY << " vertexDeltaZ = " << vertexDeltaZ << " vertexDeltaR = " << vertexDeltaR << " pi0TrueRecoAngle = " << pi0TrueRecoAngle << std::endl;
+
+        hVertexResolutionX[trueInteractionType]->Fill(vertexDeltaX);        
+        hVertexResolutionY[trueInteractionType]->Fill(vertexDeltaY);        
+        hVertexResolutionZ[trueInteractionType]->Fill(vertexDeltaZ);        
+        hVertexResolutionR[trueInteractionType]->Fill(vertexDeltaR);        
+        hVertexResVsPi0Angle->Fill(vertexDeltaR,pi0TrueRecoAngle);
     }
     TString implDirString="";
     if(implDir) implDirString="ImpliedShowerDirection_";
@@ -377,4 +418,11 @@ void makeInvMassPlots(const char* inputFilesList, const char* channel, const int
     makePlot(hRecoProtonPi0Angle, "recoProtonPi0AngleCanvas", "Angle [deg]", "N", (channelString+implDirString+"recoProtonPi0Angle.pdf").Data(), interactionTypes, intTypeLabels);
     makePlot(hTrueProtonPi0Angle, "trueProtonPi0AngleCanvas", "Angle [deg]", "N", (channelString+"trueProtonPi0Angle.pdf").Data(), interactionTypes, intTypeLabels);
     makePlot(hProtonPi0AngleRes, "protonPi0AngleResCanvas", "Angle Resolution", "N", (channelString+implDirString+"protonPi0AngleRes.pdf").Data(), interactionTypes, intTypeLabels);
+    makePlot(hVertexResolutionX, "vertexResolutionXCanvas","Vertex Resolution X", "N", (channelString+implDirString+"vertexResolutionX.pdf").Data(), interactionTypes, intTypeLabels);
+    makePlot(hVertexResolutionY, "vertexResolutionYCanvas","Vertex Resolution Y", "N", (channelString+implDirString+"vertexResolutionY.pdf").Data(), interactionTypes, intTypeLabels);
+    makePlot(hVertexResolutionZ, "vertexResolutionZCanvas","Vertex Resolution Z", "N", (channelString+implDirString+"vertexResolutionZ.pdf").Data(), interactionTypes, intTypeLabels);
+    makePlot(hVertexResolutionR, "vertexResolutionRCanvas","Vertex Resolution R", "N", (channelString+implDirString+"vertexResolutionR.pdf").Data(), interactionTypes, intTypeLabels);
+    TCanvas *hVertexResVsPi0AngleCanvas = new TCanvas();
+    hVertexResVsPi0Angle->Draw("colz");
+    hVertexResVsPi0AngleCanvas->Print((channelString+implDirString+"vertexResVsPi0Angle.pdf").Data());
 }
